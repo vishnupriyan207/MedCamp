@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Staff Statistics - RAG AI System</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f0f2f5;
+        }
+        
+        .navbar {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .navbar h1 {
+            margin: 0;
+            font-size: 1.8rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .nav-links {
+            display: flex;
+            gap: 15px;
+        }
+        
+        .nav-links a {
+            color: white;
+            text-decoration: none;
+            padding: 8px 20px;
+            border-radius: 50px;
+            font-weight: 500;
+            transition: all 0.3s;
+            background: rgba(255,255,255,0.1);
+        }
+        
+        .nav-links a:hover {
+            background: rgba(255,255,255,0.2);
+            transform: translateY(-2px);
+        }
+        
+        .nav-links .logout {
+            background: #dc3545;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 2rem auto;
+            padding: 0 2rem;
+        }
+        
+        /* Stats Overview */
+        .stats-overview {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .stat-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.05);
+            text-align: center;
+            transition: transform 0.3s;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+        }
+        
+        .stat-icon {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .stat-number {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #1e3c72;
+            line-height: 1.2;
+        }
+        
+        .stat-label {
+            color: #6c757d;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        /* Charts Grid */
+        .charts-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .chart-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.05);
+        }
+        
+        .chart-card h3 {
+            color: #1e3c72;
+            margin-bottom: 1.5rem;
+            font-size: 1.2rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid #e9ecef;
+        }
+        
+        /* AI Performance */
+        .ai-performance {
+            background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+            padding: 1.5rem;
+            border-radius: 15px;
+            margin-bottom: 2rem;
+            border-left: 4px solid #28a745;
+        }
+        
+        .ai-performance h3 {
+            color: #1e3c72;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background: #e9ecef;
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 1rem 0;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #28a745, #20c997);
+            border-radius: 10px;
+            transition: width 0.3s;
+        }
+        
+        .stats-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.8rem 0;
+            border-bottom: 1px solid #dee2e6;
+        }
+        
+        .stats-row:last-child {
+            border-bottom: none;
+        }
+        
+        .stat-label {
+            color: #495057;
+            font-weight: 500;
+        }
+        
+        .stat-value {
+            font-weight: bold;
+            color: #1e3c72;
+        }
+        
+        .badge {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+        
+        .badge-success {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .badge-warning {
+            background: #fff3cd;
+            color: #856404;
+        }
+        
+        .badge-info {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+        
+        /* Tables */
+        .table-container {
+            overflow-x: auto;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        th {
+            background: #f8f9fa;
+            padding: 1rem;
+            text-align: left;
+            font-weight: 600;
+            color: #1e3c72;
+            border-bottom: 2px solid #dee2e6;
+        }
+        
+        td {
+            padding: 1rem;
+            border-bottom: 1px solid #e9ecef;
+            color: #495057;
+        }
+        
+        tr:hover {
+            background: #f8f9fa;
+        }
+        
+        .intent-tag {
+            background: #2a5298;
+            color: white;
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            display: inline-block;
+        }
+        
+        .staff-name {
+            font-weight: 600;
+            color: #1e3c72;
+        }
+        
+        .department {
+            color: #6c757d;
+            font-size: 0.9rem;
+        }
+        
+        /* Grid for tables */
+        .tables-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+        
+        .table-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.05);
+        }
+        
+        .table-card h3 {
+            color: #1e3c72;
+            margin-bottom: 1rem;
+            font-size: 1.2rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .footer-note {
+            margin-top: 2rem;
+            padding: 1rem;
+            text-align: center;
+            color: #6c757d;
+            font-size: 0.9rem;
+            border-top: 1px solid #dee2e6;
+        }
+        
+        .refresh-note {
+            text-align: right;
+            margin-bottom: 1rem;
+            color: #6c757d;
+            font-size: 0.85rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="navbar">
+        <h1>📊 RAG AI System - Statistics Dashboard</h1>
+        <div class="nav-links">
+            <span>Welcome, {{ name }}!</span>
+            <a href="{{ url_for('staff_dashboard') }}">🏥 Dashboard</a>
+            <a href="{{ url_for('logout') }}" class="logout">🚪 Logout</a>
+        </div>
+    </div>
+    
+    <div class="container">
+        <div class="refresh-note">
+            Last updated: {{ now().strftime('%Y-%m-%d %H:%M:%S') if now else 'Just now' }}
+        </div>
+        
+        <!-- Overview Stats -->
+        <div class="stats-overview">
+            <div class="stat-card">
+                <div class="stat-icon">📝</div>
+                <div class="stat-number">{{ total_queries }}</div>
+                <div class="stat-label">Total Queries</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">✅</div>
+                <div class="stat-number">{{ answered_queries }}</div>
+                <div class="stat-label">Answered</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">⏳</div>
+                <div class="stat-number">{{ pending_queries }}</div>
+                <div class="stat-label">Pending</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">🤖</div>
+                <div class="stat-number">{{ ai_stats.total_ai_responses or 0 }}</div>
+                <div class="stat-label">AI Responses</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">⚡</div>
+                <div class="stat-number">{{ avg_response_time }}</div>
+                <div class="stat-label">Avg Response Time</div>
+            </div>
+        </div>
+        
+        <!-- AI Performance Card -->
+        <div class="ai-performance">
+            <h3>
+                <span>🤖 RAG AI Performance</span>
+                <span class="badge badge-success">{{ ai_stats.acceptance_rate or 0 }}% Acceptance Rate</span>
+            </h3>
+            
+            <div class="progress-bar">
+                <div class="progress-fill" style="width: {{ ai_stats.acceptance_rate or 0 }}%;"></div>
+            </div>
+            
+            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-top: 1rem;">
+                <div class="stats-row">
+                    <span class="stat-label">AI Responses:</span>
+                    <span class="stat-value">{{ ai_stats.total_ai_responses or 0 }}</span>
+                </div>
+                <div class="stats-row">
+                    <span class="stat-label">Accepted (No Edit):</span>
+                    <span class="stat-value">{{ ai_stats.accepted_count or 0 }}</span>
+                </div>
+                <div class="stats-row">
+                    <span class="stat-label">Edited by Staff:</span>
+                    <span class="stat-value">{{ ai_stats.edited_count or 0 }}</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Charts Grid -->
+        <div class="charts-grid">
+            <!-- Intent Performance -->
+            <div class="chart-card">
+                <h3>📊 Performance by Intent</h3>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Intent</th>
+                                <th>Total</th>
+                                <th>Edited</th>
+                                <th>Acceptance</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for stat in intent_stats %}
+                            <tr>
+                                <td><span class="intent-tag">{{ stat.intent|replace('_', ' ')|title }}</span></td>
+                                <td>{{ stat.total }}</td>
+                                <td>{{ stat.edited_count or 0 }}</td>
+                                <td>
+                                    <span class="badge {% if stat.acceptance_rate > 70 %}badge-success{% else %}badge-warning{% endif %}">
+                                        {{ stat.acceptance_rate or 0 }}%
+                                    </span>
+                                </td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="4" style="text-align: center; color: #6c757d;">No data available</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <!-- Daily Activity -->
+            <div class="chart-card">
+                <h3>📅 Last 7 Days Activity</h3>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Queries</th>
+                                <th>Answered</th>
+                                <th>Rate</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for day in daily_activity %}
+                            <tr>
+                                <td>{{ day.date }}</td>
+                                <td>{{ day.queries }}</td>
+                                <td>{{ day.answered }}</td>
+                                <td>
+                                    {% if day.queries > 0 %}
+                                    <span class="badge badge-info">
+                                        {{ (day.answered / day.queries * 100)|round }}%
+                                    </span>
+                                    {% else %}
+                                    <span class="badge">0%</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="4" style="text-align: center; color: #6c757d;">No data available</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Tables Grid -->
+        <div class="tables-grid">
+            <!-- Staff Performance -->
+            <div class="table-card">
+                <h3>👥 Staff Performance</h3>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Staff</th>
+                                <th>Department</th>
+                                <th>Responses</th>
+                                <th>Edits</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for staff in staff_performance %}
+                            <tr>
+                                <td>
+                                    <span class="staff-name">{{ staff.name }}</span>
+                                </td>
+                                <td><span class="department">{{ staff.department or 'N/A' }}</span></td>
+                                <td>{{ staff.responses or 0 }}</td>
+                                <td>
+                                    <span class="badge {% if staff.edits_made and staff.edits_made > 0 %}badge-warning{% else %}badge-success{% endif %}">
+                                        {{ staff.edits_made or 0 }} edits
+                                    </span>
+                                </td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="4" style="text-align: center; color: #6c757d;">No data available</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <!-- Recent Responses -->
+            <div class="table-card">
+                <h3>🕐 Recent Responses</h3>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Patient</th>
+                                <th>Intent</th>
+                                <th>Staff</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for response in recent_responses %}
+                            <tr>
+                                <td>{{ response.patient_name }}</td>
+                                <td><span class="intent-tag" style="background: #6c757d;">{{ response.intent or 'General' }}</span></td>
+                                <td>{{ response.staff_name or 'N/A' }}</td>
+                                <td>
+                                    {% if response.edited_by_staff %}
+                                    <span class="badge badge-warning">✏️ Edited</span>
+                                    {% else %}
+                                    <span class="badge badge-success">🤖 AI Used</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="4" style="text-align: center; color: #6c757d;">No recent responses</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Insights Section -->
+        <div style="background: white; padding: 1.5rem; border-radius: 15px; margin-top: 2rem; box-shadow: 0 5px 20px rgba(0,0,0,0.05);">
+            <h3 style="color: #1e3c72; margin-bottom: 1rem;">📈 Insights & Recommendations</h3>
+            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem;">
+                <div>
+                    <h4 style="color: #28a745; margin-bottom: 0.5rem;">✅ What's Working</h4>
+                    <ul style="color: #495057; line-height: 1.6; padding-left: 1.2rem;">
+                        <li>AI acceptance rate: {{ ai_stats.acceptance_rate or 0 }}%</li>
+                        <li>{{ answered_queries }} queries answered</li>
+                        <li>{{ staff_performance|length }} active staff</li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 style="color: #ffc107; margin-bottom: 0.5rem;">⚠️ Areas to Improve</h4>
+                    <ul style="color: #495057; line-height: 1.6; padding-left: 1.2rem;">
+                        {% for stat in intent_stats %}
+                        {% if stat.acceptance_rate and stat.acceptance_rate < 50 %}
+                        <li>{{ stat.intent }} needs review ({{ stat.acceptance_rate }}% acceptance)</li>
+                        {% endif %}
+                        {% else %}
+                        <li>No improvement areas identified</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                <div>
+                    <h4 style="color: #1e3c72; margin-bottom: 0.5rem;">🎯 Next Steps</h4>
+                    <ul style="color: #495057; line-height: 1.6; padding-left: 1.2rem;">
+                        {% if pending_queries > 0 %}
+                        <li>Respond to {{ pending_queries }} pending queries</li>
+                        {% endif %}
+                        <li>Review low-acceptance intents</li>
+                        <li>Update knowledge base as needed</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        <div class="footer-note">
+            <p>🤖 RAG AI System - Continuously learning from staff edits to improve responses</p>
+            <p style="font-size: 0.8rem; margin-top: 0.5rem;">Statistics update in real-time as staff respond to queries</p>
+        </div>
+    </div>
+    
+    <script>
+        // Add current datetime function for Jinja
+        function now() {
+            return new Date();
+        }
+    </script>
+</body>
+</html>

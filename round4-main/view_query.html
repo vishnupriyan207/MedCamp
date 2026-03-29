@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>View Query - RAG AI System</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f0f2f5;
+        }
+        
+        .navbar {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .navbar h1 {
+            margin: 0;
+            font-size: 1.5rem;
+        }
+        
+        .navbar a {
+            color: white;
+            text-decoration: none;
+            padding: 8px 20px;
+            border-radius: 50px;
+            background: rgba(255,255,255,0.1);
+        }
+        
+        .navbar a:hover {
+            background: rgba(255,255,255,0.2);
+        }
+        
+        .container {
+            max-width: 1000px;
+            margin: 2rem auto;
+            padding: 0 2rem;
+        }
+        
+        .back-link {
+            margin-bottom: 1rem;
+        }
+        
+        .back-link a {
+            color: #1e3c72;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .query-detail {
+            background: white;
+            padding: 2rem;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+        }
+        
+        .query-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid #e9ecef;
+        }
+        
+        .patient-name {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #1e3c72;
+        }
+        
+        .query-date {
+            color: #6c757d;
+        }
+        
+        .intent-badge {
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 50px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            background: #2a5298;
+            color: white;
+            margin-left: 1rem;
+        }
+        
+        .intent-badge.emergency {
+            background: #dc3545;
+        }
+        
+        .urgency-box {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 1rem;
+            border-radius: 8px;
+            margin: 1rem 0;
+        }
+        
+        .query-box {
+            background: #f8f9fa;
+            padding: 1.5rem;
+            border-radius: 10px;
+            margin: 1.5rem 0;
+            border-left: 4px solid #2a5298;
+        }
+        
+        .query-box h3 {
+            color: #1e3c72;
+            margin-bottom: 1rem;
+        }
+        
+        .query-text {
+            font-size: 1.1rem;
+            line-height: 1.6;
+            color: #495057;
+        }
+        
+        .ai-suggestion {
+            background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+            padding: 1.5rem;
+            border-radius: 10px;
+            margin: 1.5rem 0;
+            border-left: 4px solid #28a745;
+            position: relative;
+        }
+        
+        .ai-suggestion:before {
+            content: '🤖 RAG AI SUGGESTION';
+            position: absolute;
+            top: -12px;
+            left: 20px;
+            background: #28a745;
+            color: white;
+            padding: 4px 15px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+        
+        .ai-suggestion p {
+            color: #0d3c5c;
+            line-height: 1.6;
+            white-space: pre-line;
+            margin-top: 1rem;
+        }
+        
+        .response-form {
+            background: white;
+            padding: 2rem;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        }
+        
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: #1e3c72;
+        }
+        
+        textarea {
+            width: 100%;
+            padding: 1rem;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-family: inherit;
+            resize: vertical;
+            min-height: 150px;
+        }
+        
+        textarea:focus {
+            outline: none;
+            border-color: #2a5298;
+        }
+        
+        .form-actions {
+            display: flex;
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+        
+        .btn {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 50px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            box-shadow: 0 4px 15px rgba(30, 60, 114, 0.3);
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(30, 60, 114, 0.4);
+        }
+        
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+        
+        .btn-use-ai {
+            background: #28a745;
+            color: white;
+            margin-bottom: 1rem;
+        }
+        
+        .btn-use-ai:hover {
+            background: #218838;
+        }
+        
+        .alert {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+            border-left: 4px solid #dc3545;
+        }
+        
+        .info-note {
+            background: #d1ecf1;
+            color: #0c5460;
+            padding: 0.8rem;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            margin: 1rem 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="navbar">
+        <h1>🏥 Review & Respond to Query</h1>
+        <a href="{{ url_for('staff_dashboard') }}">← Back to Dashboard</a>
+    </div>
+    
+    <div class="container">
+        <div class="back-link">
+            <a href="{{ url_for('staff_dashboard') }}">← Back to all queries</a>
+        </div>
+        
+        <div class="query-detail">
+            <div class="query-header">
+                <div>
+                    <span class="patient-name">{{ query.patient_name }}</span>
+                    <span class="intent-badge {% if query.urgency_score and query.urgency_score >= 5 %}emergency{% endif %}">
+                        {{ query.intent|replace('_', ' ')|title if query.intent else 'General' }}
+                    </span>
+                </div>
+                <span class="query-date">{{ query.created_at }}</span>
+            </div>
+            
+            {% if query.urgency_score and query.urgency_score >= 5 %}
+            <div class="alert">
+                <strong>🚨 EMERGENCY QUERY</strong> - Urgency Score: {{ query.urgency_score }}/5<br>
+                Please prioritize this response. If this is a medical emergency, ensure the patient has been advised to call 911.
+            </div>
+            {% endif %}
+            
+            {% if query.urgency_score and query.urgency_score > 0 and query.urgency_score < 5 %}
+            <div class="urgency-box">
+                <strong>⚠️ Urgency Score: {{ query.urgency_score }}/5</strong> - This query requires attention
+            </div>
+            {% endif %}
+            
+            <div class="query-box">
+                <h3>Patient's Question:</h3>
+                <p class="query-text">{{ query.query_text }}</p>
+            </div>
+            
+            {% if query.ai_suggestion %}
+            <div class="ai-suggestion">
+                <p>{{ query.ai_suggestion|replace('\n', '<br>')|safe }}</p>
+                <div class="info-note">
+                    💡 This response was generated by RAG AI using the medical knowledge base and patient history.
+                </div>
+            </div>
+            {% else %}
+            <div style="background: #fff3cd; padding: 1.5rem; border-radius: 10px; margin: 1.5rem 0;">
+                <p>⏳ No AI suggestion yet. Click "Use AI Suggestion" after generating one.</p>
+            </div>
+            {% endif %}
+        </div>
+        
+        <div class="response-form">
+            <h2 style="color: #1e3c72; margin-bottom: 1.5rem;">Your Response</h2>
+            
+            <form method="POST" action="{{ url_for('respond_query', query_id=query.id) }}" id="responseForm">
+                <input type="hidden" name="ai_suggestion" value="{{ query.ai_suggestion or '' }}">
+                
+                {% if query.ai_suggestion %}
+                <button type="button" class="btn btn-use-ai" onclick="useAISuggestion()">
+                    📋 Use AI Suggestion
+                </button>
+                {% endif %}
+                
+                <div class="form-group">
+                    <label>Response Text</label>
+                    <textarea name="response" id="responseText" placeholder="Type your response here..." required>{% if query.final_response %}{{ query.final_response }}{% endif %}</textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label>Staff Notes (Internal only - not sent to patient)</label>
+                    <textarea name="notes" id="notes" placeholder="Add private notes about this response...">{{ query.staff_notes or '' }}</textarea>
+                </div>
+                
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">✉️ Send Response to Patient</button>
+                    <a href="{{ url_for('staff_dashboard') }}" class="btn btn-secondary">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <script>
+        function useAISuggestion() {
+            {% if query.ai_suggestion %}
+            var aiText = {{ query.ai_suggestion|tojson }};
+            document.getElementById('responseText').value = aiText;
+            {% endif %}
+        }
+        
+        // Auto-save draft to localStorage
+        const responseText = document.getElementById('responseText');
+        const notes = document.getElementById('notes');
+        
+        responseText.addEventListener('input', function() {
+            localStorage.setItem('draft_response_{{ query.id }}', this.value);
+        });
+        
+        notes.addEventListener('input', function() {
+            localStorage.setItem('draft_notes_{{ query.id }}', this.value);
+        });
+        
+        // Load draft if exists
+        window.onload = function() {
+            const savedResponse = localStorage.getItem('draft_response_{{ query.id }}');
+            const savedNotes = localStorage.getItem('draft_notes_{{ query.id }}');
+            
+            if (savedResponse && !responseText.value) {
+                responseText.value = savedResponse;
+            }
+            if (savedNotes && !notes.value) {
+                notes.value = savedNotes;
+            }
+        }
+        
+        // Clear draft on submit
+        document.getElementById('responseForm').onsubmit = function() {
+            localStorage.removeItem('draft_response_{{ query.id }}');
+            localStorage.removeItem('draft_notes_{{ query.id }}');
+        };
+    </script>
+</body>
+</html>

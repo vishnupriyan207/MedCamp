@@ -1,0 +1,960 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Staff Dashboard - RAG AI System</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f0f2f5;
+        }
+        
+        .navbar {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        
+        .navbar h1 {
+            margin: 0;
+            font-size: 1.8rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .nav-links {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+        
+        .nav-links a {
+            color: white;
+            text-decoration: none;
+            padding: 8px 20px;
+            border-radius: 50px;
+            font-weight: 500;
+            transition: all 0.3s;
+            background: rgba(255,255,255,0.1);
+        }
+        
+        .nav-links a:hover {
+            background: rgba(255,255,255,0.2);
+            transform: translateY(-2px);
+        }
+        
+        .nav-links .logout {
+            background: #dc3545;
+        }
+        
+        .nav-links .logout:hover {
+            background: #c82333;
+        }
+        
+        /* Emergency Alert Banner */
+        .emergency-banner {
+            background: linear-gradient(135deg, #dc3545 0%, #ff6b6b 100%);
+            color: white;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            animation: slideDown 0.5s ease-out;
+            box-shadow: 0 4px 15px rgba(220, 53, 69, 0.3);
+            position: sticky;
+            top: 80px;
+            z-index: 99;
+        }
+        
+        @keyframes slideDown {
+            from {
+                transform: translateY(-100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+        
+        .emergency-banner-content {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .emergency-icon {
+            font-size: 2rem;
+            animation: bellRing 1s infinite;
+        }
+        
+        @keyframes bellRing {
+            0%, 100% { transform: rotate(0); }
+            20% { transform: rotate(15deg); }
+            40% { transform: rotate(-15deg); }
+            60% { transform: rotate(10deg); }
+            80% { transform: rotate(-10deg); }
+        }
+        
+        .emergency-text {
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+        
+        .emergency-count {
+            background: white;
+            color: #dc3545;
+            padding: 0.2rem 1rem;
+            border-radius: 50px;
+            font-weight: bold;
+            font-size: 1.1rem;
+        }
+        
+        .dismiss-btn {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: 1px solid white;
+            padding: 0.5rem 1.5rem;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .dismiss-btn:hover {
+            background: white;
+            color: #dc3545;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 2rem auto;
+            padding: 0 2rem;
+        }
+        
+        /* Staff Info Card */
+        .staff-info {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.05);
+            margin-bottom: 2rem;
+            border: 1px solid rgba(0,0,0,0.05);
+        }
+        
+        .staff-info h2 {
+            color: #1e3c72;
+            margin-bottom: 1rem;
+            font-size: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+        
+        .info-item {
+            background: #f8f9fa;
+            padding: 1rem;
+            border-radius: 10px;
+            border-left: 4px solid #2a5298;
+        }
+        
+        .info-item label {
+            font-size: 0.85rem;
+            color: #6c757d;
+            display: block;
+            margin-bottom: 0.3rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .info-item div {
+            font-size: 1.1rem;
+            color: #1e3c72;
+            font-weight: 500;
+        }
+        
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .stat-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.05);
+            text-align: center;
+            transition: transform 0.3s;
+            border: 1px solid rgba(0,0,0,0.05);
+            cursor: pointer;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+        }
+        
+        .stat-card.emergency {
+            background: linear-gradient(135deg, #fff5f5 0%, #ffe3e3 100%);
+            border-left: 4px solid #dc3545;
+            animation: softPulse 2s infinite;
+        }
+        
+        @keyframes softPulse {
+            0% { box-shadow: 0 0 0 0 rgba(220, 53, 69, 0.2); }
+            70% { box-shadow: 0 0 0 10px rgba(220, 53, 69, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(220, 53, 69, 0); }
+        }
+        
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #1e3c72;
+            line-height: 1.2;
+        }
+        
+        .stat-label {
+            color: #6c757d;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        /* Queries Section */
+        .queries-section {
+            background: white;
+            padding: 2rem;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.05);
+        }
+        
+        .queries-section h2 {
+            color: #1e3c72;
+            margin-bottom: 1.5rem;
+            font-size: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .query-card {
+            border: 1px solid #e9ecef;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            background: #fafafa;
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .query-card:hover {
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            transform: translateX(5px);
+        }
+        
+        /* Emergency Query Styling */
+        .query-card.emergency {
+            background: linear-gradient(135deg, #fff5f5 0%, #ffffff 100%);
+            border-left: 6px solid #dc3545;
+            animation: emergencyPulse 2s infinite;
+            box-shadow: 0 0 15px rgba(220, 53, 69, 0.2);
+        }
+        
+        @keyframes emergencyPulse {
+            0% {
+                border-left-color: #dc3545;
+                box-shadow: 0 0 0 0 rgba(220, 53, 69, 0.4);
+            }
+            50% {
+                border-left-color: #ff6b6b;
+                box-shadow: 0 0 0 10px rgba(220, 53, 69, 0.1);
+            }
+            100% {
+                border-left-color: #dc3545;
+                box-shadow: 0 0 0 0 rgba(220, 53, 69, 0.4);
+            }
+        }
+        
+        .emergency-ribbon {
+            position: absolute;
+            top: 20px;
+            right: -35px;
+            background: #dc3545;
+            color: white;
+            padding: 8px 40px;
+            transform: rotate(45deg);
+            font-size: 0.9rem;
+            font-weight: bold;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            z-index: 10;
+            animation: ribbonPulse 1.5s infinite;
+        }
+        
+        @keyframes ribbonPulse {
+            0%, 100% { background: #dc3545; }
+            50% { background: #ff6b6b; }
+        }
+        
+        .query-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        
+        .patient-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+        
+        .patient-name {
+            font-weight: 600;
+            color: #1e3c72;
+            font-size: 1.2rem;
+            background: #e9ecef;
+            padding: 5px 15px;
+            border-radius: 50px;
+        }
+        
+        .query-date {
+            color: #6c757d;
+            font-size: 0.9rem;
+            background: #f8f9fa;
+            padding: 5px 12px;
+            border-radius: 50px;
+        }
+        
+        .intent-badge {
+            padding: 5px 15px;
+            border-radius: 50px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            background: #2a5298;
+            color: white;
+        }
+        
+        .intent-badge.emergency {
+            background: #dc3545;
+            animation: blink 1s infinite;
+        }
+        
+        @keyframes blink {
+            0% { opacity: 1; }
+            50% { opacity: 0.7; }
+            100% { opacity: 1; }
+        }
+        
+        .emergency-tag {
+            background: #dc3545;
+            color: white;
+            padding: 5px 15px;
+            border-radius: 50px;
+            font-size: 0.9rem;
+            font-weight: bold;
+            text-transform: uppercase;
+            margin-left: 10px;
+            animation: pulse 1.5s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        
+        .urgency-badge {
+            background: #ffc107;
+            color: #000;
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+        
+        .query-text {
+            background: white;
+            padding: 1.2rem;
+            border-radius: 10px;
+            margin: 1rem 0;
+            border-left: 4px solid #2a5298;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+        }
+        
+        .query-card.emergency .query-text {
+            border-left: 4px solid #dc3545;
+            background: #fff5f5;
+        }
+        
+        .query-text strong {
+            color: #1e3c72;
+            display: block;
+            margin-bottom: 0.5rem;
+        }
+        
+        .query-text p {
+            color: #495057;
+            line-height: 1.6;
+            font-size: 1rem;
+        }
+        
+        .ai-suggestion {
+            background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+            padding: 1.5rem;
+            border-radius: 10px;
+            margin: 1rem 0;
+            border-left: 4px solid #28a745;
+            position: relative;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        
+        .ai-suggestion:before {
+            content: '🤖 RAG AI SUGGESTION';
+            position: absolute;
+            top: -12px;
+            left: 20px;
+            background: #28a745;
+            color: white;
+            padding: 4px 15px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            z-index: 5;
+        }
+        
+        .ai-suggestion p {
+            color: #0d3c5c;
+            line-height: 1.6;
+            margin-bottom: 0.5rem;
+            white-space: pre-line;
+        }
+        
+        .response-actions {
+            margin-top: 1.2rem;
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+        
+        .btn {
+            padding: 10px 25px;
+            border: none;
+            border-radius: 50px;
+            font-size: 0.95rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            box-shadow: 0 4px 15px rgba(30, 60, 114, 0.3);
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(30, 60, 114, 0.4);
+        }
+        
+        .btn-refresh {
+            background: #ffc107;
+            color: #000;
+        }
+        
+        .btn-refresh:hover {
+            background: #e0a800;
+            transform: translateY(-2px);
+        }
+        
+        .btn-emergency {
+            background: #dc3545;
+            color: white;
+            animation: emergencyButton 2s infinite;
+        }
+        
+        @keyframes emergencyButton {
+            0% { background: #dc3545; }
+            50% { background: #ff6b6b; }
+            100% { background: #dc3545; }
+        }
+        
+        .no-queries {
+            text-align: center;
+            padding: 4rem 2rem;
+            background: #f8f9fa;
+            border-radius: 10px;
+            color: #6c757d;
+        }
+        
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #1e3c72;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: white;
+            padding: 1rem 2rem;
+            border-radius: 10px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+            display: none;
+            z-index: 1000;
+            border-left: 4px solid #28a745;
+            font-weight: 500;
+            animation: slideIn 0.3s ease-out;
+        }
+        
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+        
+        .toast.error {
+            border-left-color: #dc3545;
+        }
+        
+        .toast.emergency {
+            border-left-color: #dc3545;
+            background: #fff5f5;
+            color: #dc3545;
+            font-weight: bold;
+        }
+        
+        .footer-note {
+            margin-top: 2rem;
+            padding: 1.5rem;
+            text-align: center;
+            color: #6c757d;
+            font-size: 0.9rem;
+            border-top: 1px solid #dee2e6;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        
+        /* Sound toggle button */
+        .sound-toggle {
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.3);
+            color: white;
+            padding: 8px 15px;
+            border-radius: 50px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .sound-toggle:hover {
+            background: rgba(255,255,255,0.2);
+        }
+        
+        .sound-toggle.muted {
+            opacity: 0.6;
+        }
+    </style>
+</head>
+<body>
+    <div class="navbar">
+        <h1>🏥 RAG AI Hospital System - Staff Portal</h1>
+        <div class="nav-links">
+            <span>Welcome, {{ name }}! 👋</span>
+            <a href="{{ url_for('staff_stats') }}">📊 Statistics</a>
+            <button class="sound-toggle" id="soundToggle" onclick="toggleSound()">🔊 Sound On</button>
+            <a href="{{ url_for('logout') }}" class="logout">🚪 Logout</a>
+        </div>
+    </div>
+    
+    <!-- Emergency Alert Banner (shows when there are emergencies) -->
+    <div id="emergencyBanner" class="emergency-banner" style="display: none;">
+        <div class="emergency-banner-content">
+            <span class="emergency-icon">🚨</span>
+            <span class="emergency-text">EMERGENCY QUERIES DETECTED!</span>
+            <span class="emergency-count" id="emergencyCount">0</span>
+            <span>Require immediate attention</span>
+        </div>
+        <button class="dismiss-btn" onclick="dismissBanner()">Dismiss</button>
+    </div>
+    
+    <div class="container">
+        <!-- Staff Info Card -->
+        <div class="staff-info">
+            <h2>
+                <span>👋 Welcome, {{ name }}</span>
+                {% if stats.emergency > 0 %}
+                <span class="emergency-tag" style="font-size: 0.9rem; margin-left: 1rem;">
+                    🚨 {{ stats.emergency }} Emergency Query{% if stats.emergency > 1 %}s{% endif %}
+                </span>
+                {% endif %}
+            </h2>
+            <div class="info-grid">
+                <div class="info-item">
+                    <label>Department</label>
+                    <div>{{ staff.department if staff.department else 'Not assigned' }}</div>
+                </div>
+                <div class="info-item">
+                    <label>Position</label>
+                    <div>{{ staff.position if staff.position else 'Staff' }}</div>
+                </div>
+                <div class="info-item">
+                    <label>Employee ID</label>
+                    <div>{{ staff.employee_id if staff.employee_id else 'Not provided' }}</div>
+                </div>
+                <div class="info-item">
+                    <label>Email</label>
+                    <div>{{ staff.email }}</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Statistics Cards -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-number">{{ stats.total }}</div>
+                <div class="stat-label">Total Queries</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">{{ stats.pending }}</div>
+                <div class="stat-label">Pending</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">{{ stats.answered }}</div>
+                <div class="stat-label">Answered</div>
+            </div>
+            <div class="stat-card {% if stats.emergency > 0 %}emergency{% endif %}" onclick="scrollToEmergencies()">
+                <div class="stat-number">{{ stats.emergency }}</div>
+                <div class="stat-label">
+                    🚨 Emergency
+                    {% if stats.emergency > 0 %}
+                    <div style="font-size: 0.8rem; color: #dc3545; margin-top: 5px;">
+                        Click to view
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Pending Queries Section -->
+        <div class="queries-section">
+            <h2>
+                <span>📋 Pending Patient Queries</span>
+                <span class="loading" id="globalLoading" style="display: none;"></span>
+                {% if stats.emergency > 0 %}
+                <span style="color: #dc3545; font-size: 0.9rem; margin-left: auto; background: #ffe3e3; padding: 5px 15px; border-radius: 50px;">
+                    ⚠️ {{ stats.emergency }} urgent
+                </span>
+                {% endif %}
+            </h2>
+            
+            {% if queries %}
+                {% for query in queries %}
+                <div class="query-card {% if query.urgency_score and query.urgency_score >= 5 %}emergency{% endif %}" 
+                     id="query-{{ query.id }}"
+                     data-urgency="{{ query.urgency_score or 0 }}">
+                    {% if query.urgency_score and query.urgency_score >= 5 %}
+                    <div class="emergency-ribbon">🚨 URGENT</div>
+                    {% endif %}
+                    
+                    <div class="query-header">
+                        <div class="patient-info">
+                            <span class="patient-name">{{ query.patient_name }}</span>
+                            <span class="query-date">{{ query.created_at }}</span>
+                            <span class="intent-badge {% if query.urgency_score and query.urgency_score >= 5 %}emergency{% endif %}">
+                                {{ query.intent|replace('_', ' ')|title if query.intent else 'Classifying...' }}
+                            </span>
+                            {% if query.urgency_score and query.urgency_score >= 5 %}
+                            <span class="emergency-tag">🚨 EMERGENCY - PRIORITIZE</span>
+                            {% elif query.urgency_score and query.urgency_score >= 3 %}
+                            <span class="urgency-badge">⚠️ High Priority</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="query-text">
+                        <strong>Patient Question:</strong>
+                        <p>{{ query.query_text }}</p>
+                    </div>
+                    
+                    {% if query.ai_suggestion %}
+                    <div class="ai-suggestion">
+                        <p>{{ query.ai_suggestion|replace('\n', '<br>')|safe }}</p>
+                    </div>
+                    {% else %}
+                    <div style="background: #fff3cd; padding: 1.5rem; border-radius: 10px; margin: 1rem 0; border-left: 4px solid #ffc107;">
+                        <p style="margin-bottom: 1rem;">⏳ RAG AI is generating a response for this query...</p>
+                        <button class="btn btn-refresh" onclick="refreshAISuggestion({{ query.id }})">
+                            🔄 Generate AI Response Now
+                        </button>
+                    </div>
+                    {% endif %}
+                    
+                    <div class="response-actions">
+                        <a href="{{ url_for('view_query', query_id=query.id) }}" 
+                           class="btn btn-primary {% if query.urgency_score and query.urgency_score >= 5 %}btn-emergency{% endif %}">
+                            ✏️ Review & Respond
+                        </a>
+                        <button class="btn btn-refresh" onclick="refreshAISuggestion({{ query.id }})">
+                            🔄 Regenerate AI Response
+                        </button>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="no-queries">
+                    <p>✨ No pending queries at the moment</p>
+                    <p style="font-size: 1rem; color: #95a5a6;">Great job! All caught up.</p>
+                </div>
+            {% endif %}
+        </div>
+        
+        <div class="footer-note">
+            <p>🤖 RAG AI System - Automatically classifies and generates responses for EVERY patient query</p>
+            <p style="font-size: 0.8rem; margin-top: 0.5rem; color: #28a745;">
+                ⚡ Emergency queries are automatically detected, highlighted in red, and show alerts
+            </p>
+        </div>
+    </div>
+    
+    <!-- Toast Notification -->
+    <div id="toast" class="toast"></div>
+    
+    <!-- Audio for notification (using Web Audio API as fallback) -->
+    <script>
+        // State variables
+        let soundEnabled = localStorage.getItem('soundEnabled') !== 'false';
+        let lastEmergencyCount = {{ stats.emergency }};
+        let checkInterval;
+        
+        // Update sound button
+        function updateSoundButton() {
+            const btn = document.getElementById('soundToggle');
+            if (btn) {
+                btn.innerHTML = soundEnabled ? '🔊 Sound On' : '🔇 Sound Off';
+                btn.className = 'sound-toggle' + (soundEnabled ? '' : ' muted');
+            }
+        }
+        
+        // Toggle sound
+        function toggleSound() {
+            soundEnabled = !soundEnabled;
+            localStorage.setItem('soundEnabled', soundEnabled);
+            updateSoundButton();
+            showToast(soundEnabled ? '🔊 Sound notifications enabled' : '🔇 Sound notifications disabled');
+        }
+        
+        // Play notification sound
+        function playNotificationSound(isEmergency = false) {
+            if (!soundEnabled) return;
+            
+            try {
+                // Create beep sound using Web Audio API
+                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                const oscillator = audioContext.createOscillator();
+                const gainNode = audioContext.createGain();
+                
+                oscillator.connect(gainNode);
+                gainNode.connect(audioContext.destination);
+                
+                if (isEmergency) {
+                    // Emergency sound - alternating high pitch
+                    oscillator.frequency.setValueAtTime(880, audioContext.currentTime); // A5
+                    oscillator.frequency.setValueAtTime(440, audioContext.currentTime + 0.2); // A4
+                    gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.4);
+                    oscillator.start();
+                    oscillator.stop(audioContext.currentTime + 0.4);
+                } else {
+                    // Normal notification - single beep
+                    oscillator.frequency.setValueAtTime(523.25, audioContext.currentTime); // C5
+                    gainNode.gain.setValueAtTime(0.2, audioContext.currentTime);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.2);
+                    oscillator.start();
+                    oscillator.stop(audioContext.currentTime + 0.2);
+                }
+            } catch (e) {
+                console.log('Audio not supported:', e);
+            }
+        }
+        
+        // Show toast notification
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.className = 'toast ' + type;
+            toast.style.display = 'block';
+            
+            setTimeout(() => {
+                toast.style.display = 'none';
+            }, 4000);
+        }
+        
+        // Check for new emergencies
+        async function checkForEmergencies() {
+            try {
+                const response = await fetch('/check-emergencies');
+                const data = await response.json();
+                
+                // Update emergency banner
+                const banner = document.getElementById('emergencyBanner');
+                const countSpan = document.getElementById('emergencyCount');
+                
+                if (data.total_emergencies > 0) {
+                    countSpan.textContent = data.total_emergencies;
+                    banner.style.display = 'flex';
+                    
+                    // Check for new emergencies
+                    if (data.new_emergencies > 0) {
+                        showToast(`🚨 ${data.new_emergencies} new emergency query detected!`, 'emergency');
+                        playNotificationSound(true);
+                        
+                        // Update page title
+                        document.title = `🚨 ${data.total_emergencies} Emergency - Staff Dashboard`;
+                        
+                        // Refresh the page to show new queries
+                        setTimeout(() => {
+                            location.reload();
+                        }, 2000);
+                    }
+                } else {
+                    banner.style.display = 'none';
+                    document.title = 'Staff Dashboard - RAG AI System';
+                }
+            } catch (e) {
+                console.log('Error checking emergencies:', e);
+            }
+        }
+        
+        // Dismiss emergency banner
+        function dismissBanner() {
+            document.getElementById('emergencyBanner').style.display = 'none';
+        }
+        
+        // Scroll to emergency queries
+        function scrollToEmergencies() {
+            const emergencyCards = document.querySelectorAll('.query-card.emergency');
+            if (emergencyCards.length > 0) {
+                emergencyCards[0].scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+        }
+        
+        // Refresh AI suggestion
+        async function refreshAISuggestion(queryId) {
+            const card = document.getElementById(`query-${queryId}`);
+            const refreshBtn = event.target;
+            const originalText = refreshBtn.innerHTML;
+            
+            refreshBtn.innerHTML = '⏳ Generating...';
+            refreshBtn.disabled = true;
+            
+            document.getElementById('globalLoading').style.display = 'inline-block';
+            
+            try {
+                const response = await fetch(`/refresh-ai/${queryId}`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    showToast('✅ AI response generated successfully!');
+                    
+                    // If emergency, play sound
+                    if (data.urgency >= 5) {
+                        playNotificationSound(true);
+                    }
+                    
+                    setTimeout(() => {
+                        location.reload();
+                    }, 1500);
+                } else {
+                    throw new Error(data.error || 'Failed to generate AI suggestion');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showToast('❌ Error: ' + error.message, 'error');
+                
+                refreshBtn.innerHTML = originalText;
+                refreshBtn.disabled = false;
+            } finally {
+                document.getElementById('globalLoading').style.display = 'none';
+            }
+        }
+        
+        // Initialize
+        window.onload = function() {
+            updateSoundButton();
+            
+            // Check for emergencies immediately
+            checkForEmergencies();
+            
+            // Check every 10 seconds
+            setInterval(checkForEmergencies, 10000);
+            
+            // Check if there are any emergency cards
+            const emergencyCards = document.querySelectorAll('.query-card.emergency');
+            if (emergencyCards.length > 0) {
+                document.title = `🚨 ${emergencyCards.length} Emergency - Staff Dashboard`;
+                playNotificationSound(true);
+            }
+        };
+        
+        // Handle visibility change
+        document.addEventListener('visibilitychange', function() {
+            if (!document.hidden) {
+                // Page is visible again, check for emergencies
+                checkForEmergencies();
+            }
+        });
+    </script>
+</body>
+</html>

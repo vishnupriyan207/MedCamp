@@ -1,0 +1,945 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MedCamp Connect</title>
+    <style>
+        /* CSS Variables for Light Green Theme */
+        :root {
+            --primary: #2e7d32;       /* Deep Green */
+            --primary-light: #c8e6c9; /* Green for accents/cards */
+            --secondary: #1b5e20;     /* Darker Green for buttons */
+            --background: #e8f5e9;    /* Very Light Green Background for App */
+            --surface: #ffffff;       /* White for cards to pop against light green */
+            --text-main: #1b5e20;     /* Dark Green Text */
+            --text-muted: #388e3c;    /* Medium Green for muted text */
+            --border: #a5d6a7;        /* Green border */
+            --danger: #d32f2f;
+            --radius-md: 12px;
+            --radius-lg: 20px;
+            --shadow-sm: 0 2px 8px rgba(46, 125, 50, 0.1);
+            --shadow-md: 0 8px 16px rgba(46, 125, 50, 0.2);
+            --transition: all 0.3s ease;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        /* Outside of mobile view */
+        body {
+            background-color: #a5d6a7; /* Darker green outside mobile container */
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+        }
+
+        /* Mobile Container to enforce mobile-first max-width */
+        .app-container {
+            width: 100%;
+            max-width: 480px;
+            background-color: var(--background); /* Light green background */
+            min-height: 100vh;
+            position: relative;
+            box-shadow: var(--shadow-md);
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+        }
+
+        /* Navbar */
+        nav {
+            background: var(--primary);
+            color: white;
+            padding: 16px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .logo {
+            font-weight: 700;
+            font-size: 1.25rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .nav-actions { display: flex; gap: 10px; }
+        
+        .nav-btn {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        /* Views management */
+        .view-section {
+            display: none;
+            filter: opacity(0);
+            transition: var(--transition);
+            flex: 1;
+            padding: 20px;
+            padding-bottom: 80px; /* Space for footer/mobile nav */
+        }
+        
+        .view-section.active {
+            display: block;
+            animation: fadeIn 0.4s forwards;
+        }
+
+        @keyframes fadeIn {
+            to { filter: opacity(1); }
+        }
+
+        /* Typography */
+        h1 { font-size: 2rem; margin-bottom: 10px; color: var(--primary); line-height: 1.2; text-align: center; }
+        h2 { font-size: 1.5rem; margin-bottom: 16px; color: var(--primary); }
+        h3 { font-size: 1.2rem; margin-bottom: 8px; color: var(--secondary); }
+        p { color: var(--text-main); line-height: 1.5; margin-bottom: 16px; }
+
+        /* Form Elements */
+        .form-group { margin-bottom: 16px; }
+        .form-label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 600;
+            font-size: 0.95rem;
+            color: var(--secondary);
+        }
+        .form-control {
+            width: 100%;
+            padding: 14px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            font-size: 1rem;
+            background: var(--surface);
+            transition: var(--transition);
+        }
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px var(--primary-light);
+        }
+        textarea.form-control { resize: vertical; min-height: 100px; }
+
+        /* Buttons */
+        .btn {
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+            width: 100%;
+            padding: 16px;
+            border-radius: var(--radius-md);
+            font-size: 1.1rem;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+            transition: var(--transition);
+            margin-bottom: 12px;
+            box-shadow: var(--shadow-sm);
+        }
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-primary:active { background: #1b5e20; transform: scale(0.98); }
+        
+        .btn-secondary { background: var(--secondary); color: white; }
+        .btn-secondary:active { background: #000000; transform: scale(0.98); }
+
+        .btn-outline { background: transparent; border: 2px solid var(--primary); color: var(--primary); box-shadow: none; }
+        .btn-text { background: transparent; color: var(--primary); padding: 10px; box-shadow: none; margin-bottom: 0; }
+
+        /* Role Selection Landing Page */
+        .role-selector {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 70vh;
+            text-align: center;
+        }
+
+        /* Feature Cards */
+        .feature-card {
+            background: var(--surface);
+            padding: 20px;
+            border-radius: var(--radius-md);
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--border);
+        }
+
+        /* Camp Cards */
+        .camp-list { display: flex; flex-direction: column; gap: 16px; margin-top: 16px; }
+        .camp-card {
+            background: var(--surface);
+            border-radius: var(--radius-md);
+            padding: 20px;
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--border);
+            border-left: 5px solid var(--primary);
+            position: relative;
+        }
+        .camp-badge {
+            position: absolute;
+            top: 20px; right: 20px;
+            background: var(--primary-light);
+            color: var(--secondary);
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 700;
+        }
+        .camp-date-loc { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 12px; font-size: 0.95rem; color: var(--text-muted); }
+
+        /* Filters */
+        .filters {
+            background: var(--primary-light);
+            padding: 16px;
+            border-radius: var(--radius-md);
+            margin-bottom: 20px;
+            border: 1px solid var(--border);
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+        }
+        .empty-icon { font-size: 3rem; margin-bottom: 16px; opacity: 0.7; }
+
+        /* Notifications Toast */
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: #1b5e20;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 30px;
+            font-weight: 500;
+            z-index: 1000;
+            opacity: 0;
+            transition: var(--transition);
+            width: max-content;
+            max-width: 90%;
+            text-align: center;
+        }
+        .toast.show {
+            transform: translateX(-50%) translateY(0);
+            opacity: 1;
+        }
+
+        /* Checkbox groups */
+        .checkbox-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 16px;
+        }
+        .checkbox-label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.9rem;
+            background: var(--surface);
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            color: var(--secondary);
+        }
+
+        /* Loader */
+        .loader-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(232,245,233,0.9);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s;
+        }
+        .loader-overlay.active { opacity: 1; pointer-events: all; }
+        .spinner {
+            width: 50px; height: 50px;
+            border: 5px solid var(--border);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+
+        /* Footer Info */
+        .footer {
+            text-align: center;
+            padding: 20px;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            border-top: 1px solid var(--border);
+            margin-top: auto;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="app-container">
+        <!-- Navigation -->
+        <nav id="navbar">
+            <div class="logo" onclick="app.unauthGoHome()">
+                🏥 MedCamp Connect
+            </div>
+            <div class="nav-actions" id="nav-auth" style="display: none;">
+                <button class="nav-btn" onclick="app.navigate('profile')">👤 Profile</button>
+                <button class="nav-btn" onclick="app.logout()">Logout</button>
+            </div>
+        </nav>
+
+        <!-- 1. Landing Page / Main Admin Selector -->
+        <section id="landing" class="view-section active">
+            <div class="role-selector">
+                <div style="font-size: 4rem; margin-bottom: 20px;">🏥</div>
+                <h1>Welcome to MedCamp</h1>
+                <p style="font-size: 1.1rem; margin-bottom: 40px;">Select your portal to continue</p>
+                
+                <button class="btn btn-primary" style="padding: 24px; font-size: 1.3rem; margin-bottom: 20px;" onclick="app.prepareLogin('organization')">
+                    🏢 Organization Login
+                </button>
+                <button class="btn btn-secondary" style="padding: 24px; font-size: 1.3rem;" onclick="app.prepareLogin('customer')">
+                    🧑 Customer Login
+                </button>
+            </div>
+            <div class="footer">
+                <p>© 2026 MedCamp Connect</p>
+            </div>
+        </section>
+
+        <!-- 2. Login Page -->
+        <section id="login" class="view-section">
+            <button class="btn-text" onclick="app.unauthGoHome()">← Back Home</button>
+            <h2 id="loginRoleTitle" style="margin-top:20px;">Login</h2>
+            <p>Please log in to your account.</p>
+
+            <form id="loginForm" onsubmit="event.preventDefault(); app.handleLogin();">
+                <div class="form-group">
+                    <label class="form-label">Email Address</label>
+                    <input type="email" id="loginEmail" class="form-control" required placeholder="name@example.com">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Password</label>
+                    <input type="password" id="loginPassword" class="form-control" required placeholder="******">
+                </div>
+                <button type="submit" class="btn btn-primary">Login to Dashboard</button>
+                <button type="button" class="btn btn-text" onclick="app.navigate('signup')">New here? Sign up instead</button>
+            </form>
+            
+            <div style="background:var(--primary-light); border:1px solid var(--border); padding:15px; border-radius:8px; font-size:0.85rem; margin-top:30px; color:var(--secondary);">
+                <strong>Test Accounts included:</strong><br><br>
+                For Organization: org@test.com / 123456<br>
+                For Customer: user@test.com / 123456
+            </div>
+        </section>
+
+        <!-- 3. Signup Page -->
+        <section id="signup" class="view-section">
+            <button class="btn-text" onclick="app.navigate('login')">← Back to Login</button>
+            <h2 id="signupRoleTitle" style="margin-top:20px;">Create Account</h2>
+            <p>Join MedCamp Connect to host or find medical camps.</p>
+
+            <form id="signupForm" onsubmit="event.preventDefault(); app.handleSignup();">
+                <div class="form-group">
+                    <label class="form-label">Full Name / Organization Name</label>
+                    <input type="text" id="signupName" class="form-control" required placeholder="Enter name">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Email Address</label>
+                    <input type="email" id="signupEmail" class="form-control" required placeholder="name@example.com">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Password</label>
+                    <input type="password" id="signupPassword" class="form-control" required placeholder="Create password (min 6 chars)">
+                </div>
+                <button type="submit" class="btn btn-primary">Sign Up</button>
+            </form>
+        </section>
+
+        <!-- 4. Organization Dashboard -->
+        <section id="org-dashboard" class="view-section">
+            <h2>Organization Dashboard</h2>
+            <p id="orgWelcome" style="color:var(--text-main); font-weight:600;">Welcome back, Organization!</p>
+
+            <div style="display:flex; gap:10px; margin-bottom: 24px;">
+                <button class="btn btn-primary" style="margin:0" onclick="app.navigate('create-camp')">➕ Create New Camp</button>
+            </div>
+
+            <h3>Your Hosted Camps</h3>
+            <div id="orgCampsList" class="camp-list">
+                <!-- Org Camps injected here -->
+            </div>
+        </section>
+
+        <!-- 5. Create Camp Page -->
+        <section id="create-camp" class="view-section">
+            <button class="btn-text" onclick="app.navigate('org-dashboard')">← Cancel</button>
+            <h2>Create Medical Camp</h2>
+            <p>Fill out the details to publish a new medical camp.</p>
+
+            <form id="createCampForm" onsubmit="event.preventDefault(); app.handleCreateCamp();">
+                <div class="form-group">
+                    <label class="form-label">Camp Title</label>
+                    <input type="text" id="campTitle" class="form-control" required placeholder="e.g. Free Eye Checkup Camp">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Camp Speciality / Type</label>
+                    <select id="campType" class="form-control" required>
+                        <option value="General">General Health</option>
+                        <option value="Eye">Eye Checkup</option>
+                        <option value="Dental">Dental Care</option>
+                        <option value="Cardiology">Cardiology</option>
+                        <option value="Bone">Orthopedics (Bone)</option>
+                        <option value="Other">Other</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Description</label>
+                    <textarea id="campDesc" class="form-control" required placeholder="Details about what services will be provided..."></textarea>
+                </div>
+                
+                <label class="form-label">Services Provided (Optional)</label>
+                <div class="checkbox-group">
+                    <label class="checkbox-label"><input type="checkbox" name="services" value="Consultation"> Consultation</label>
+                    <label class="checkbox-label"><input type="checkbox" name="services" value="Free Medicines"> Medicines</label>
+                    <label class="checkbox-label"><input type="checkbox" name="services" value="Blood Test"> Blood Test</label>
+                    <label class="checkbox-label"><input type="checkbox" name="services" value="X-Ray"> X-Ray</label>
+                </div>
+
+                <div style="display:flex; gap:10px;">
+                    <div class="form-group" style="flex:1">
+                        <label class="form-label">Date</label>
+                        <input type="date" id="campDate" class="form-control" required>
+                    </div>
+                    <div class="form-group" style="flex:1">
+                        <label class="form-label">Time</label>
+                        <input type="time" id="campTime" class="form-control" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Shortlist Nearby Location / Full Address</label>
+                    <input type="text" id="campLocation" class="form-control" required placeholder="Building, Street, City Area">
+                </div>
+                
+                <div style="display:flex; gap:10px;">
+                    <div class="form-group" style="flex:1">
+                        <label class="form-label">Max Patients</label>
+                        <input type="number" id="campCapacity" class="form-control" required min="1" value="100">
+                    </div>
+                    <div class="form-group" style="flex:1">
+                        <label class="form-label">Contact Phone</label>
+                        <input type="tel" id="campPhone" class="form-control" required placeholder="10-digit number">
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-secondary" style="margin-top: 10px;">Publish Camp</button>
+            </form>
+        </section>
+
+        <!-- 6. Customer Dashboard -->
+        <section id="user-dashboard" class="view-section">
+            <h2>Find Nearby Camps</h2>
+            <p>Shortlist medical camps available in your area.</p>
+            
+            <div class="filters">
+                <input type="text" id="searchCamp" class="form-control" placeholder="📍 Search by Location or Area..." onkeyup="app.filterCamps()">
+                <div style="display:flex; gap:10px; margin-top:10px;">
+                    <select id="filterType" class="form-control" onchange="app.filterCamps()">
+                        <option value="All">All Types</option>
+                        <option value="General">General Health</option>
+                        <option value="Eye">Eye Checkup</option>
+                        <option value="Dental">Dental Care</option>
+                        <option value="Cardiology">Cardiology</option>
+                        <option value="Bone">Orthopedics</option>
+                    </select>
+                </div>
+            </div>
+
+            <h3>Available Medical Camps</h3>
+            <div id="userCampsList" class="camp-list">
+                <!-- Available camps injected here -->
+            </div>
+        </section>
+
+        <!-- 7. Camp Details Page -->
+        <section id="camp-details" class="view-section">
+            <button class="btn-text" onclick="app.goBack()">← Back</button>
+            <div id="campDetailsContent">
+                <!-- Content injected via JS -->
+            </div>
+        </section>
+
+        <!-- 8. Profile Page -->
+        <section id="profile" class="view-section">
+            <h2>Your Profile</h2>
+            <div class="feature-card" style="flex-direction: column; align-items:flex-start; margin-bottom: 24px; border-left: 5px solid var(--primary);">
+                <h3 id="profileName" style="color:var(--primary); margin:0;">Name</h3>
+                <p id="profileEmail" style="margin:5px 0;">Email</p>
+                <span id="profileRoleBadge" class="camp-badge" style="position:relative; top:auto; right:auto; margin-top:10px; display:inline-block; background:var(--primary); color:white;">Role</span>
+            </div>
+
+            <h3 id="profileListTitle">My Items</h3>
+            <div id="profileList" class="camp-list">
+                <!-- Registered/Created camps injected here -->
+            </div>
+        </section>
+    </div>
+
+    <!-- UI Components -->
+    <div class="toast" id="toastMsg">Message Here</div>
+    <div class="loader-overlay" id="loader">
+        <div class="spinner"></div>
+    </div>
+
+    <script>
+        /**
+         * App Logic & State Management
+         * Simulates a backend using LocalStorage
+         */
+        const app = {
+            currentUser: null,
+            selectedRole: 'customer', // Tracks which flow the user is in (org or customer)
+            history: [],
+            
+            init() {
+                this.initDummyData();
+                this.checkAuth();
+            },
+
+            initDummyData() {
+                if (!localStorage.getItem('users')) {
+                    const dummyUsers = [
+                        { id: 'u1', name: 'HealthOrg India', email: 'org@test.com', password: '123456', role: 'organization' },
+                        { id: 'u2', name: 'John Doe', email: 'user@test.com', password: '123456', role: 'customer' }
+                    ];
+                    localStorage.setItem('users', JSON.stringify(dummyUsers));
+                }
+                
+                if (!localStorage.getItem('camps')) {
+                    const today = new Date();
+                    const nextWeek = new Date(today);
+                    nextWeek.setDate(nextWeek.getDate() + 7);
+                    
+                    const dummyCamps = [
+                        {
+                            id: 'c1', title: 'Mega Free Eye Checkup', type: 'Eye', 
+                            description: 'Comprehensive eye screening including cataract testing.',
+                            services: ['Consultation', 'Medicines'],
+                            date: nextWeek.toISOString().split('T')[0], time: '10:00',
+                            location: 'Rotary Club Hall, Downtown, Chennai', capacity: 200, phone: '9876543210',
+                            createdBy: 'u1', orgName: 'HealthOrg India'
+                        },
+                        {
+                            id: 'c2', title: 'Community Cardiac Camp', type: 'Cardiology', 
+                            description: 'Free ECG and BP checkup for senior citizens.',
+                            services: ['Consultation', 'Blood Test'],
+                            date: today.toISOString().split('T')[0], time: '09:00',
+                            location: 'City Hospital Campus, Anna Nagar', capacity: 100, phone: '9123456780',
+                            createdBy: 'u1', orgName: 'HealthOrg India'
+                        }
+                    ];
+                    localStorage.setItem('camps', JSON.stringify(dummyCamps));
+                }
+
+                if (!localStorage.getItem('registrations')) {
+                    localStorage.setItem('registrations', JSON.stringify([])); 
+                }
+            },
+
+            showLoader(callback) {
+                document.getElementById('loader').classList.add('active');
+                setTimeout(() => {
+                    document.getElementById('loader').classList.remove('active');
+                    if(callback) callback();
+                }, 500);
+            },
+
+            showToast(msg, isError = false) {
+                const toast = document.getElementById('toastMsg');
+                toast.textContent = msg;
+                toast.style.background = isError ? '#d32f2f' : '#1b5e20';
+                toast.classList.add('show');
+                setTimeout(() => toast.classList.remove('show'), 3000);
+            },
+
+            navigate(viewId, pushHistory = true) {
+                document.querySelectorAll('.view-section').forEach(el => {
+                    el.classList.remove('active');
+                });
+                const view = document.getElementById(viewId);
+                if(view) {
+                    view.classList.add('active');
+                    if (pushHistory) this.history.push(viewId);
+                    window.scrollTo(0,0);
+                    this.onViewLoad(viewId);
+                }
+            },
+
+            goBack() {
+                if(this.history.length > 1) {
+                    this.history.pop();
+                    const prevView = this.history.pop();
+                    this.navigate(prevView);
+                } else {
+                    this.unauthGoHome();
+                }
+            },
+
+            unauthGoHome() {
+                if(this.currentUser) {
+                    this.navigate(this.currentUser.role === 'organization' ? 'org-dashboard' : 'user-dashboard');
+                } else {
+                    this.history = [];
+                    this.navigate('landing');
+                }
+            },
+
+            onViewLoad(viewId) {
+                if(viewId === 'org-dashboard') this.renderOrgDashboard();
+                if(viewId === 'user-dashboard') this.renderUserDashboard();
+                if(viewId === 'profile') this.renderProfile();
+            },
+
+            checkAuth() {
+                const session = localStorage.getItem('currentUser');
+                if (session) {
+                    this.currentUser = JSON.parse(session);
+                    document.getElementById('nav-auth').style.display = 'flex';
+                    this.navigate(this.currentUser.role === 'organization' ? 'org-dashboard' : 'user-dashboard');
+                } else {
+                    document.getElementById('nav-auth').style.display = 'none';
+                    this.navigate('landing');
+                }
+            },
+
+            // Set role and head to login
+            prepareLogin(role) {
+                this.selectedRole = role;
+                document.getElementById('loginRoleTitle').textContent = role === 'organization' ? 'Organization Portal' : 'Customer Portal';
+                document.getElementById('signupRoleTitle').textContent = role === 'organization' ? 'Register Organization' : 'Create Customer Account';
+                
+                // Pre-fill emails for test convenience based on selection
+                document.getElementById('loginEmail').value = role === 'organization' ? 'org@test.com' : 'user@test.com';
+                
+                this.navigate('login');
+            },
+
+            handleSignup() {
+                const name = document.getElementById('signupName').value;
+                const email = document.getElementById('signupEmail').value;
+                const password = document.getElementById('signupPassword').value;
+                
+                // Uses the role they selected on the landing page
+                const role = this.selectedRole;
+
+                if(password.length < 6) return this.showToast('Password must be at least 6 characters', true);
+
+                this.showLoader(() => {
+                    const users = JSON.parse(localStorage.getItem('users'));
+                    if(users.some(u => u.email === email)) {
+                        return this.showToast('Email already registered!', true);
+                    }
+                    
+                    const newUser = { id: 'u_'+Date.now(), name, email, password, role };
+                    users.push(newUser);
+                    localStorage.setItem('users', JSON.stringify(users));
+                    
+                    this.showToast('Account created successfully! Please login.');
+                    document.getElementById('signupForm').reset();
+                    this.navigate('login');
+                });
+            },
+
+            handleLogin() {
+                const email = document.getElementById('loginEmail').value;
+                const password = document.getElementById('loginPassword').value;
+
+                this.showLoader(() => {
+                    const users = JSON.parse(localStorage.getItem('users'));
+                    const user = users.find(u => u.email === email && u.password === password);
+                    
+                    if(user) {
+                        // Check if they are in the correct portal
+                        if (user.role !== this.selectedRole) {
+                            return this.showToast(`Error: This email belongs to a ${user.role} account! Go back to Home and select ${user.role}.`, true);
+                        }
+
+                        this.currentUser = user;
+                        localStorage.setItem('currentUser', JSON.stringify(user));
+                        this.showToast(`Welcome, ${user.name}!`);
+                        document.getElementById('nav-auth').style.display = 'flex';
+                        
+                        // Once logged in, move to respective dashboard
+                        this.navigate(user.role === 'organization' ? 'org-dashboard' : 'user-dashboard');
+                    } else {
+                        this.showToast('Invalid email or password', true);
+                    }
+                });
+            },
+
+            logout() {
+                this.showLoader(() => {
+                    localStorage.removeItem('currentUser');
+                    this.currentUser = null;
+                    document.getElementById('nav-auth').style.display = 'none';
+                    this.history = [];
+                    this.navigate('landing');
+                    this.showToast('Logged out successfully');
+                });
+            },
+
+            handleCreateCamp() {
+                const title = document.getElementById('campTitle').value;
+                const type = document.getElementById('campType').value;
+                const description = document.getElementById('campDesc').value;
+                const date = document.getElementById('campDate').value;
+                const time = document.getElementById('campTime').value;
+                const location = document.getElementById('campLocation').value;
+                const capacity = document.getElementById('campCapacity').value;
+                const phone = document.getElementById('campPhone').value;
+
+                const servicesOpts = document.querySelectorAll('input[name="services"]:checked');
+                const services = Array.from(servicesOpts).map(cb => cb.value);
+
+                this.showLoader(() => {
+                    const camps = JSON.parse(localStorage.getItem('camps'));
+                    const newCamp = {
+                        id: 'c_'+Date.now(),
+                        title, type, description, date, time, location, capacity, phone, services,
+                        createdBy: this.currentUser.id,
+                        orgName: this.currentUser.name,
+                        createdAt: new Date().toISOString()
+                    };
+                    
+                    camps.push(newCamp);
+                    localStorage.setItem('camps', JSON.stringify(camps));
+                    
+                    this.showToast('Camp published successfully!');
+                    document.getElementById('createCampForm').reset();
+                    this.navigate('org-dashboard');
+                });
+            },
+
+            renderCampCard(camp, role) {
+                const d = new Date(camp.date);
+                const dateStr = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+                
+                return `
+                    <div class="camp-card">
+                        <span class="camp-badge">${camp.type}</span>
+                        <h3 style="margin-bottom:8px; padding-right:60px; color:var(--primary);">${camp.title}</h3>
+                        <p style="margin:0 0 8px; font-size:0.9rem; font-weight:600;">By ${camp.orgName}</p>
+                        <div class="camp-date-loc">
+                            <div>📅 ${dateStr} • ${camp.time}</div>
+                        </div>
+                        <div class="camp-date-loc" style="color:var(--text-main);">
+                            <div>📍 ${camp.location}</div>
+                        </div>
+                        <button class="btn btn-primary" style="padding:10px; margin:0;" onclick="app.viewCampDetails('${camp.id}')">
+                            View Details / Register
+                        </button>
+                    </div>
+                `;
+            },
+
+            renderOrgDashboard() {
+                if(!this.currentUser) return;
+                document.getElementById('orgWelcome').textContent = `Organization: ${this.currentUser.name}`;
+                const camps = JSON.parse(localStorage.getItem('camps'));
+                const myCamps = camps.filter(c => c.createdBy === this.currentUser.id).reverse();
+                
+                const listEl = document.getElementById('orgCampsList');
+                if(myCamps.length === 0) {
+                    listEl.innerHTML = `
+                        <div class="empty-state">
+                            <div class="empty-icon">🏥</div>
+                            <p>You haven't hosted any camps yet.</p>
+                        </div>
+                    `;
+                } else {
+                    listEl.innerHTML = myCamps.map(c => this.renderCampCard(c, 'org')).join('');
+                }
+            },
+
+            renderUserDashboard() {
+                this.filterCamps();
+            },
+
+            filterCamps() {
+                const searchQ = document.getElementById('searchCamp').value.toLowerCase();
+                const typeFilter = document.getElementById('filterType').value;
+                
+                const camps = JSON.parse(localStorage.getItem('camps')).reverse();
+                
+                const filtered = camps.filter(c => {
+                    const matchSearch = c.title.toLowerCase().includes(searchQ) || c.location.toLowerCase().includes(searchQ) || c.orgName.toLowerCase().includes(searchQ);
+                    const matchType = typeFilter === 'All' || c.type === typeFilter;
+                    return matchSearch && matchType;
+                });
+
+                const listEl = document.getElementById('userCampsList');
+                if(filtered.length === 0) {
+                    listEl.innerHTML = `
+                        <div class="empty-state">
+                            <div class="empty-icon">🔍</div>
+                            <p>No medical camps found near this location.</p>
+                        </div>
+                    `;
+                } else {
+                    listEl.innerHTML = filtered.map(c => this.renderCampCard(c, 'user')).join('');
+                }
+            },
+
+            viewCampDetails(campId) {
+                const camps = JSON.parse(localStorage.getItem('camps'));
+                const camp = camps.find(c => c.id === campId);
+                if(!camp) return;
+
+                const isCustomer = this.currentUser && this.currentUser.role === 'customer';
+                
+                let isRegistered = false;
+                if(isCustomer) {
+                    const regs = JSON.parse(localStorage.getItem('registrations'));
+                    isRegistered = regs.some(r => r.userId === this.currentUser.id && r.campId === camp.id);
+                }
+
+                const d = new Date(camp.date);
+                const dateStr = d.toLocaleDateString('en-US', { weekday: 'short', month: 'long', day: 'numeric', year: 'numeric' });
+
+                const servicesHtml = camp.services && camp.services.length > 0 
+                    ? `<div style="margin:20px 0;">
+                        <h4 style="color:var(--primary);">Services Provided:</h4>
+                        <div style="display:flex; gap:8px; flex-wrap:wrap; margin-top:8px;">
+                            ${camp.services.map(s => `<span style="background:var(--primary-light); color:var(--secondary); padding:4px 10px; border-radius:12px; font-size:0.85rem; border:1px solid var(--primary);">✓ ${s}</span>`).join('')}
+                        </div>
+                       </div>` 
+                    : '';
+
+                let actionBtn = '';
+                if(isCustomer) {
+                    if(isRegistered) {
+                        actionBtn = `<button class="btn btn-secondary" style="background:var(--danger);" onclick="app.registerCamp('${camp.id}', false)">Cancel Registration</button>`;
+                    } else {
+                        actionBtn = `<button class="btn btn-primary" onclick="app.registerCamp('${camp.id}', true)">Confirm Registration</button>`;
+                    }
+                }
+
+                document.getElementById('campDetailsContent').innerHTML = `
+                    <div style="background:var(--primary-light); padding:30px 20px; border-radius:var(--radius-md); margin-bottom:20px; border:1px solid var(--border);">
+                        <span class="camp-badge" style="position:relative; top:auto; right:auto; margin-bottom:10px; display:inline-block; border:1px solid var(--primary);">${camp.type}</span>
+                        <h2 style="font-size:1.8rem; color:var(--secondary); margin-bottom:8px;">${camp.title}</h2>
+                        <p style="margin:0; font-weight:600;">Hosted by: ${camp.orgName}</p>
+                    </div>
+
+                    <div style="background:var(--surface); padding:20px; border-radius:var(--radius-md); box-shadow:var(--shadow-sm); margin-bottom:20px; border:1px solid var(--border);">
+                        <h3 style="margin-bottom:12px;">About the Camp</h3>
+                        <p>${camp.description}</p>
+                        ${servicesHtml}
+                    </div>
+
+                    <div style="background:var(--surface); padding:20px; border-radius:var(--radius-md); box-shadow:var(--shadow-sm); margin-bottom:20px; border:1px solid var(--border);">
+                        <div style="display:flex; gap:12px; margin-bottom:16px;">
+                            <span style="font-size:1.2rem;">📅</span>
+                            <div><strong>Date & Time</strong><br><span style="color:var(--text-muted)">${dateStr} at ${camp.time}</span></div>
+                        </div>
+                        <div style="display:flex; gap:12px; margin-bottom:16px;">
+                            <span style="font-size:1.2rem;">📍</span>
+                            <div><strong>Exact Location</strong><br><span style="color:var(--text-muted)">${camp.location}</span></div>
+                        </div>
+                        <div style="display:flex; gap:12px; margin-bottom:16px;">
+                            <span style="font-size:1.2rem;">📞</span>
+                            <div><strong>Contact Helper</strong><br><span style="color:var(--text-muted)">${camp.phone}</span></div>
+                        </div>
+                        <div style="display:flex; gap:12px;">
+                            <span style="font-size:1.2rem;">👥</span>
+                            <div><strong>Capacity</strong><br><span style="color:var(--text-muted)">Max ${camp.capacity} patients allowed</span></div>
+                        </div>
+                    </div>
+
+                    ${actionBtn}
+                `;
+                
+                this.navigate('camp-details');
+            },
+
+            registerCamp(campId, isRegistering) {
+                this.showLoader(() => {
+                    let regs = JSON.parse(localStorage.getItem('registrations'));
+                    if(isRegistering) {
+                        regs.push({ userId: this.currentUser.id, campId });
+                        this.showToast('Successfully registered for camp!');
+                    } else {
+                        regs = regs.filter(r => !(r.userId === this.currentUser.id && r.campId === campId));
+                        this.showToast('Registration cancelled.');
+                    }
+                    localStorage.setItem('registrations', JSON.stringify(regs));
+                    this.viewCampDetails(campId); 
+                });
+            },
+
+            renderProfile() {
+                if(!this.currentUser) return;
+                
+                document.getElementById('profileName').textContent = this.currentUser.name;
+                document.getElementById('profileEmail').textContent = this.currentUser.email;
+                document.getElementById('profileRoleBadge').textContent = this.currentUser.role.toUpperCase();
+
+                const listEl = document.getElementById('profileList');
+                const titleEl = document.getElementById('profileListTitle');
+                
+                if(this.currentUser.role === 'customer') {
+                    titleEl.textContent = 'My Registered Camps';
+                    const regs = JSON.parse(localStorage.getItem('registrations'));
+                    const myRegs = regs.filter(r => r.userId === this.currentUser.id);
+                    const camps = JSON.parse(localStorage.getItem('camps'));
+                    
+                    const registeredCamps = myRegs.map(r => camps.find(c => c.id === r.campId)).filter(Boolean);
+
+                    if(registeredCamps.length === 0) {
+                        listEl.innerHTML = `<p style="color:var(--text-muted)">You haven't registered for any camps yet.</p>`;
+                    } else {
+                        listEl.innerHTML = registeredCamps.map(c => this.renderCampCard(c, 'user')).join('');
+                    }
+                } else {
+                    titleEl.textContent = 'Account Information';
+                    listEl.innerHTML = `<p style="color:var(--text-muted)">You are an organization. Manage your camps from the Dashboard.</p>`;
+                }
+            }
+        };
+
+        window.addEventListener('DOMContentLoaded', () => {
+            app.init();
+        });
+    </script>
+</body>
+</html>
